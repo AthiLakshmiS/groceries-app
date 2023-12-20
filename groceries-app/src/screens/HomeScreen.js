@@ -1,39 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
 import { View, Text, StyleSheet, TextInput, Image, ScrollView, FlatList, TouchableOpacity, } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+// import { useNavigation } from '@react-navigation/native';
 import ApiService from '../services/ApiService';
-import {useSelector, useDispatch} from 'react-redux';
-import {getMovies, addFavorite, removeFavorite} from '../redux/action';
+// import {useSelector, useDispatch} from 'react-redux';
+// import {getMovies, addFavorite, removeFavorite} from '../redux/action';
 
 const HomeScreen = () => {
 
-    const navigation = useNavigation();
-    const dispatch = useDispatch();
+    // const navigation = useNavigation();
+    // const dispatch = useDispatch();
     const [inputText, setInputText] = useState('');
     const [data, setData] = useState(null);
     const [cart, setCart] = useState(false);
     const [like, setLike] = useState(false);
-    const {movies, favorites} = useSelector(state => state.moviesReducer);
+    // const {movies, favorites} = useSelector(state => state.moviesReducer);
 
-    const addToFavorites = movie => dispatch(addFavorite(movie));
-    const removeFromFavorites = movie => dispatch(removeFavorite(movie));
+    // const addToFavorites = movie => dispatch(addFavorite(movie));
+    // const removeFromFavorites = movie => dispatch(removeFavorite(movie));
     const handleAddFavorite = movie => {
-        addToFavorites(movie);
+        // addToFavorites(movie);
     };
     const handleRemoveFavorite = movie => {
-        removeFromFavorites(movie);
+        // removeFromFavorites(movie);
     };
     const exists = movie => {
-        if (favorites.filter(item => item.id === movie.id).length > 0) {
-          return true;
-        }
+        // if (favorites.filter(item => item.id === movie.id).length > 0) {
+        //   return true;
+        // }
         return false;
     };
 
     Font.loadAsync({
-        "manrope-semibold": require("../assets/font/manrope-semibold.otf"),
-        "manrope-medium": require("../assets/font/manrope-medium.otf"),
+        // "manrope-semibold": require("../assets/font/manrope-semibold.otf"),
+        // "manrope-medium": require("../assets/font/manrope-medium.otf"),
     });
 
     useEffect(() => {
@@ -44,7 +44,7 @@ const HomeScreen = () => {
         try {
             const result = await ApiService.get('/products'); // Replace with your API endpoint
             setData(result.products);
-            dispatch(getMovies(result.products));
+            // dispatch(getMovies(result.products));
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -56,7 +56,7 @@ const HomeScreen = () => {
   
     const goToCart = () => {
         // Navigate to the "Cart" screen
-        navigation.navigate('Cart');
+        // navigation.navigate('Cart');
     };
 
     const changeCart = () => {
@@ -69,7 +69,7 @@ const HomeScreen = () => {
 
     const navigateDetails = () => {
         console.log('details.')
-        navigation.navigate('Product');
+        // navigation.navigate('Product');
     };
 
     const renderItem = ({ item }) => (
@@ -90,7 +90,7 @@ const HomeScreen = () => {
                     exists(item) ? handleRemoveFavorite(item) : handleAddFavorite(item)
                 }
             >
-                {exists(item) ? <Image source={require('../assets/images/like.png')} style={styles.favourite} /> : <Image source={require('../assets/images/like.png')} style={styles.favourite} />}
+                {exists(item) ? <Image source={require('../../assets/images/like.png')} style={styles.favourite} /> : <Image source={require('../../assets/images/like.png')} style={styles.favourite} />}
             </TouchableOpacity>
             {item.thumbnail && <Image onPress={navigateDetails} source={{ uri: item.thumbnail }} style={styles.thumbnail} />}
             <View style={styles.productName}>
@@ -111,12 +111,12 @@ const HomeScreen = () => {
                 <View style={styles.profile}>
                     <Text style={styles.textHeading}>Hey, Rahul</Text>
                     <TouchableOpacity onPress={goToCart}>
-                        <Image source={require('../assets/images/cart.png')} 
+                        <Image source={require('../../assets/images/cart.png')} 
                         style={styles.cart}/>
                     </TouchableOpacity>
                 </View>
                 <View>
-                    <Image source={require('../assets/images/search.png')} 
+                    <Image source={require('../../assets/images/search.png')} 
                         style={styles.search}/>
                     <TextInput
                         style={styles.input}

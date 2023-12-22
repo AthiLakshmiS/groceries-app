@@ -1,40 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import * as Font from 'expo-font';
-import { View, Text, StyleSheet, TextInput, Image, ScrollView, FlatList, TouchableOpacity, } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
+import {useFonts} from 'expo-font';
+import { View, Text, StyleSheet, TextInput, Image, ScrollView, FlatList, TouchableOpacity, Pressable, } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import ApiService from '../services/ApiService';
-// import {useSelector, useDispatch} from 'react-redux';
 // import {getMovies, addFavorite, removeFavorite} from '../redux/action';
+import AppLoading from 'expo-app-loading';
+import { useDispatch, useSelector } from "react-redux";
+import * as Font from 'expo-font';
+import { addToCart, removeFromCart, addToFavourites, removeFromFavourites } from "../store/CartReducer";
 
+import {
+    Manrope_200ExtraLight,
+    Manrope_300Light,
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
+} from '@expo-google-fonts/manrope';
+  
 const HomeScreen = () => {
 
-    // const navigation = useNavigation();
-    // const dispatch = useDispatch();
+    const navigation = useNavigation();
     const [inputText, setInputText] = useState('');
     const [data, setData] = useState(null);
-    const [cart, setCart] = useState(false);
-    const [like, setLike] = useState(false);
-    // const {movies, favorites} = useSelector(state => state.moviesReducer);
+    const dispatch = useDispatch();
+    const cart = useSelector((state) => state.cart.cart);  
+    const favorites = useSelector(state => state.cart.favourite);
 
-    // const addToFavorites = movie => dispatch(addFavorite(movie));
-    // const removeFromFavorites = movie => dispatch(removeFavorite(movie));
+    const addToFavourite = movie => dispatch(addToFavourites(movie));
+    const removeFromFavorites = movie => dispatch(removeFromFavourites(movie));
     const handleAddFavorite = movie => {
-        // addToFavorites(movie);
+        addToFavourite(movie);
+        console.log('favourites', movie);
     };
     const handleRemoveFavorite = movie => {
-        // removeFromFavorites(movie);
+        removeFromFavorites(movie);
+        console.log('remove favourites', movie);
     };
     const exists = movie => {
-        // if (favorites.filter(item => item.id === movie.id).length > 0) {
-        //   return true;
-        // }
+        if (favorites.filter(item => item.id === movie.id).length > 0) {
+          return true;
+        }
         return false;
     };
 
-    Font.loadAsync({
-        // "manrope-semibold": require("../assets/font/manrope-semibold.otf"),
-        // "manrope-medium": require("../assets/font/manrope-medium.otf"),
+    useEffect(() => {
+        (async () => await Font.loadAsync({
+            Manrope_500Medium: require("../../assets/font/manrope-semibold.otf"),
+        }))();
+    }, [])
+
+    let [fontsLoaded] = useFonts({
+        Manrope_200ExtraLight,
+        Manrope_300Light,
+        Manrope_400Regular,
+        Manrope_500Medium,
+        Manrope_600SemiBold,
+        Manrope_700Bold,
+        Manrope_800ExtraBold,
     });
+
+    // Font.loadAsync({
+    //     "manrope-medium": require("../../assets/font/manrope-semibold.otf"),
+    // });
 
     useEffect(() => {
         fetchData();
@@ -44,7 +73,6 @@ const HomeScreen = () => {
         try {
             const result = await ApiService.get('/products'); // Replace with your API endpoint
             setData(result.products);
-            // dispatch(getMovies(result.products));
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -56,55 +84,64 @@ const HomeScreen = () => {
   
     const goToCart = () => {
         // Navigate to the "Cart" screen
-        // navigation.navigate('Cart');
-    };
-
-    const changeCart = () => {
-        setCart(!cart)
-    };
-
-    const changeLike = () => {
-        setLike(!like)
+        navigation.navigate('More');
     };
 
     const navigateDetails = () => {
         console.log('details.')
-        // navigation.navigate('Product');
+        navigation.navigate('Products');
+    };
+    const addItemToCart = (item) => {
+        dispatch(addToCart(item));
+        console.log(item);
+    };
+    const removeItemFromCart = (item) => {
+        dispatch(removeFromCart(item));
+        console.log(item);
     };
 
     const renderItem = ({ item }) => (
         <View style={styles.productContainer}>
-            <TouchableOpacity
-                activeOpacity={0.7}
-                style={{
-                  marginLeft: 14,
-                  flexDirection: 'row',
-                  padding: 2,
-                  borderRadius: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 40,
-                  width: 40,
-                }}
-                onPress={() =>
-                    exists(item) ? handleRemoveFavorite(item) : handleAddFavorite(item)
-                }
-            >
-                {exists(item) ? <Image source={require('../../assets/images/like.png')} style={styles.favourite} /> : <Image source={require('../../assets/images/like.png')} style={styles.favourite} />}
+            <TouchableOpacity onPress={navigateDetails}>
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{
+                    marginLeft: 8,
+                    flexDirection: 'row',
+                    padding: 0,
+                    borderRadius: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 40,
+                    width: 40,
+                    }}
+                    onPress={() =>
+                        exists(item) ? handleRemoveFavorite(item) : handleAddFavorite(item)
+                    }
+                >
+                    {exists(item) ? <Image source={require('../../assets/images/like.png')} style={styles.favourite} /> : <Image source={require('../../assets/images/unlike.png')} style={styles.favourite} />}
+                </TouchableOpacity>
+                {item.thumbnail && <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />}
+                <View style={styles.productName}>
+                    <View>
+                        <Text style={styles.priceText}>${item.price}</Text>
+                        <Text style={styles.brandText}>{item.brand}</Text>
+                    </View>
+                    <View>
+                        <TouchableOpacity style={styles.addCart} onPress={() => cart.some((value) => value.id == item.id) ? removeItemFromCart(item) : addItemToCart(item)}>
+                            <View>
+                                <Text style={styles.addIcon}>{cart.some((value) => value.id == item.id) ? '-' : '+'}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </TouchableOpacity>
-            {item.thumbnail && <Image onPress={navigateDetails} source={{ uri: item.thumbnail }} style={styles.thumbnail} />}
-            <View style={styles.productName}>
-                <View>
-                    <Text style={styles.priceText}>${item.price}</Text>
-                    <Text style={styles.brandText}>{item.brand}</Text>
-                </View>
-                <View style={styles.addCart}>
-                    <Text onPress={changeCart} style={styles.addIcon}>{cart ? '-' : '+'}</Text>
-                </View>
-            </View>
         </View>
     );
 
+    if (!fontsLoaded) {
+        return <Text>Loafing ...</Text>;
+    } else {
     return (
         <View>
             <View style={styles.container}>
@@ -112,7 +149,7 @@ const HomeScreen = () => {
                     <Text style={styles.textHeading}>Hey, Rahul</Text>
                     <TouchableOpacity onPress={goToCart}>
                         <Image source={require('../../assets/images/cart.png')} 
-                        style={styles.cart}/>
+                        style={styles.cartStyles}/>
                     </TouchableOpacity>
                 </View>
                 <View>
@@ -197,6 +234,7 @@ const HomeScreen = () => {
             </View>
         </View>
     );
+    }
 };
 // Styles for the landing page
 const styles = StyleSheet.create({
@@ -204,8 +242,9 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingTop: 20,
-        paddingBottom: 20,
+        paddingTop: 60,
+        paddingBottom: 30,
+        fontFamily: "Manrope_500Medium"
     },
     container: {
         paddingHorizontal: 20, 
@@ -215,6 +254,7 @@ const styles = StyleSheet.create({
     textHeading: {
         color: '#ffffff',
         fontSize: 20,
+        fontFamily: "Manrope_500Medium",    
     },
     input: {
         backgroundColor: '#153075',
@@ -236,10 +276,10 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingTop: 20,
-        paddingBottom: 20,    
+        paddingTop: 30,
+        paddingBottom: 30,    
     },
-    cart: {
+    cartStyles: {
         width: 18,
         height: 20,
     },
@@ -325,6 +365,8 @@ const styles = StyleSheet.create({
     recommend: {
         color: '#000000',
         fontSize: 21,
+        marginBottom: 20,
+        marginTop: 10,
     },
     productList: {
         backgroundColor: '#ffffff',
@@ -346,28 +388,33 @@ const styles = StyleSheet.create({
         width: 25,
         height: 25,
         borderRadius: 50,
-        marginTop: 10,
-        marginRight: 15,
+        marginTop: 0,
+        paddingRight: 0,
+        alignItems: 'center',
+        textAlign: 'center',
     },
     addIcon: {
         color: '#ffffff',
-        marginLeft: 7,
+        marginLeft: 0,
         marginTop: 0,
         marginBottom: 0,
         fontSize: 18,
+        alignItems: 'center',
+        textAlign: 'center',
     },
     productName: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginRight: 20,
         // paddingBottom: 0,    
     },
     favourite: {
         width: 16,
         resizeMode: 'contain',
         height: 16,
-        marginLeft: 22,
+        marginLeft: 0,
         marginTop: 16,
     }
 });  
